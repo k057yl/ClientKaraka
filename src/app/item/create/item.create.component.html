@@ -1,0 +1,32 @@
+<div class="create-container">
+  <h3 class="title">{{ t('ITEM_CREATE.TITLE') }}</h3>
+
+  <input placeholder="{{ t('ITEM_CREATE.PLACEHOLDER_TITLE') }}" [(ngModel)]="item.Title">
+  <input placeholder="{{ t('ITEM_CREATE.PLACEHOLDER_DESC') }}" [(ngModel)]="item.Description">
+
+  <div class="price-wrapper">
+    <input type="number" placeholder="{{ t('ITEM_CREATE.PLACEHOLDER_PRICE') }}" [(ngModel)]="item.PurchasePrice" class="price-input">
+    <div class="arrow up" (click)="item.PurchasePrice = (item.PurchasePrice||0)+1"></div>
+    <div class="arrow down" (click)="item.PurchasePrice = (item.PurchasePrice||0)-1"></div>
+  </div>
+
+  <input type="date" [(ngModel)]="item.PurchaseDate">
+
+  <select [(ngModel)]="item.CategoryId">
+    <option [value]="0" disabled>{{ t('ITEM_CREATE.CHOOSE_CATEGORY') }}</option>
+    <option *ngFor="let c of categoryOptions" [value]="c.id">{{ c.displayName }}</option>
+  </select>
+
+  <label class="file-upload">
+    <input type="file" (change)="uploadImage($event)">
+    <span>{{ selectedFileName || t('ITEM_CREATE.CHOOSE_FILE') }}</span>
+  </label>
+
+  <div *ngIf="photoUrl" class="preview">
+    <p>{{ t('ITEM_CREATE.PHOTO_UPLOADED') }}</p>
+    <img [src]="photoUrl" alt="preview">
+  </div>
+
+  <button (click)="createItem()">{{ t('ITEM_CREATE.BUTTON_CREATE') }}</button>
+  <p>{{ message }}</p>
+</div>
