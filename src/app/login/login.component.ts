@@ -134,7 +134,7 @@ export class LoginComponent {
         this.auth.setUser(res.user);
 
         // Перезагрузка + редирект на главную
-        window.location.href = '/';
+        window.location.href = '/ClientKaraka/';
       },
       error: () => {
         this.message = 'Ошибка входа';
