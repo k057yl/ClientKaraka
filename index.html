@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-beasties-container>
+<head>
+  <meta charset="utf-8">
+  <title>ClientKarakatsiyaHelper</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script>
+    // предотвращает мигание неправильной темы при загрузке
+    (function(){
+      try {
+        var t = localStorage.getItem('app-theme');
+        if (!t) {
+          var prefersDark = window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
+          t = prefersDark ? 'dark' : 'light';
+        }
+        if (t === 'dark') document.documentElement.classList.add('dark-theme');
+      } catch(e){}
+    })();
+  </script>
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<style>:root{--main-bg:#475d86;--main-text:#ffffff;--botton-bg:#5f7ab1;--botton-bg-hover:#6f8bc8;--botton-text:#ffffff;--botton-text-hover:#f0f0f0;--botton-important-bg:#01849b;--botton-important-bg-hover:#069901;--left-panel-bg:rgba(71, 93, 134, .7);--item-create-bg:#4d6592;--input-bg:#2a3955;--input-text:#e0e0e0;--item-card-border:rgba(255, 255, 255, .2);--item-card-bg-hover:rgba(255, 255, 255, .05)}:root{transition:background-color .18s linear,color .18s linear}html,body{height:100%;margin:0;background:var(--main-bg);color:var(--main-text);font-family:Inter,Roboto,Helvetica Neue,Arial,sans-serif}</style><link rel="stylesheet" href="styles-KU6RZJSS.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles-KU6RZJSS.css"></noscript></head>
+<body>
+  <app-root></app-root>
+<script src="polyfills-B6TNHZQ6.js" type="module"></script><script src="main-LLYQ5C3R.js" type="module"></script></body>
+</html>
