@@ -23,10 +23,10 @@ jobs:
       - name: Build Angular
         run: |
           npm run build -- --configuration production --base-href /ClientKaraka/
-          cp dist/client-karaka/browser/index.html dist/client-karaka/browser/404.html
+          cp dist/client-karakatsiya-helper/browser/index.html dist/client-karakatsiya-helper/browser/404.html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/client-karaka/browser
+          publish_dir: ./dist/client-karakatsiya-helper/browser
