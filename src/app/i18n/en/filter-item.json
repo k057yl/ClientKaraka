@@ -1,0 +1,13 @@
+{
+  "FILTERS": "Filters",
+  "STATUS": "Status",
+  "STAT_ALL": "All",
+  "STAT_AVAILABLE": "Available",
+  "STAT_SOLD": "Sold",
+  "PRICE_CHEAPER": "Cheaper first",
+  "PRICE_EXPENSIVE": "Expensive First",
+  "NEW": "New",
+  "APPLY": "Apply",
+  "RESET": "Reset",
+  "SORT": "Sort"
+}

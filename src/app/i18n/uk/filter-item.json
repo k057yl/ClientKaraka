@@ -1,0 +1,13 @@
+{
+  "FILTERS": "Фільтри",
+  "STATUS": "Статус",
+  "STAT_ALL": "Усі",
+  "STAT_AVAILABLE": "В наявності",
+  "STAT_SOLD": "Продано",
+  "PRICE_CHEAPER": "Спочатку дешевші",
+  "PRICE_EXPENSIVE": "Спочатку дорожчі",
+  "NEW": "Нові",
+  "APPLY": "Застосувати",
+  "RESET": "Скинути",
+  "SORT": "Сортувати"
+}

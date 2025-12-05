@@ -7,19 +7,24 @@ import { ItemCardComponent, ItemDto } from '../item/item.card.component';
 import { AuthService } from '../services/auth.service';
 import { TranslateService } from '../services/translate.service';
 import { ItemFilterService, ItemFilter } from '../services/item.filter.service';
+import { ItemFilterPanelComponent } from './item-filter-panel.component';
+import { ItemPopupComponent } from '../item/item-popup.component';
 
 @Component({
   selector: 'app-items-list',
   standalone: true,
-  imports: [CommonModule, ItemCardComponent],
+  imports: [
+    CommonModule,
+    ItemCardComponent,
+    ItemFilterPanelComponent,
+    ItemPopupComponent
+  ],
   template: `
-    <div class="filters">
-      <button (click)="applyFilter({ sortBy: 'price_asc' })">Цена ▲</button>
-      <button (click)="applyFilter({ sortBy: 'price_desc' })">Цена ▼</button>
-      <button (click)="applyFilter({ sortBy: 'date_desc' })">Новые</button>
-      <button (click)="applyFilter({ status: 'available' })">Доступные</button>
-      <button (click)="applyFilter({ status: 'sold' })">Проданные</button>
-    </div>
+    <app-item-filter-panel
+      (apply)="applyFilter($event)"
+      (sortBy)="applySort($event)"
+      (reset)="resetFilter()"
+    ></app-item-filter-panel>
 
     <div class="pagination-container">
       <button (click)="prevPage()" [disabled]="currentPage === 1">&lt;</button>
@@ -28,7 +33,11 @@ import { ItemFilterService, ItemFilter } from '../services/item.filter.service';
     </div>
 
     <div class="items-container">
-      <app-item-card *ngFor="let item of pagedItems" [item]="item" (sell)="sellItem($event)"></app-item-card>
+      <app-item-card
+        *ngFor="let item of pagedItems"
+        [item]="item"
+        (sell)="openSellPopup(item)"
+      ></app-item-card>
     </div>
 
     <div class="pagination-container bottom">
@@ -36,30 +45,33 @@ import { ItemFilterService, ItemFilter } from '../services/item.filter.service';
       <span>{{translate.t('PAGINATION.PAGE')}} {{currentPage}} / {{totalPages}}</span>
       <button (click)="nextPage()" [disabled]="currentPage === totalPages">&gt;</button>
     </div>
+
+    <app-sell-popup
+      *ngIf="popupItem"
+      [title]="popupItem.title"
+      (confirmSale)="confirmSale($event)"
+      (cancelled)="popupItem = null"
+    ></app-sell-popup>
   `,
   styles: [`
-    .filters { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
-    .items-container {
-      display: grid;
-      grid-template-columns: repeat(2, 300px);
-      justify-content: center;
-      gap: 20px 200px;
-      margin: 20px 0;
-    }
-    .pagination-container { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 10px 0; }
-    .pagination-container.bottom { margin-bottom: 30px; }
-    button { background: #333; color: #fff; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-    button:disabled { opacity: 0.4; cursor: default; }
+    .items-container { display:grid; grid-template-columns:1fr; justify-items:center; gap:20px; margin:20px 0; padding-bottom:10px; }
+    @media (min-width:768px){ .items-container { grid-template-columns:repeat(2,300px); justify-content:center; gap:40px 40px; } }
+    .pagination-container { display:flex; justify-content:center; align-items:center; gap:12px; margin:10px 0; }
+    .pagination-container.bottom { margin-bottom:30px; }
+    button { background:#333; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; }
+    button:disabled { opacity:0.4; cursor:default; }
   `]
 })
 export class ItemsListComponent implements OnInit {
   items: ItemDto[] = [];
   pagedItems: ItemDto[] = [];
   private apiUrl = `${environment.apiBaseUrl}/items/my`;
-  private salesUrl = `${environment.apiBaseUrl}/sales`;
-  itemsPerPage = 10;
+  itemsPerPage = 6;
   currentPage = 1;
   totalPages = 1;
+  currentFilter: Partial<ItemFilter> = { sortBy: 'date_desc' };
+
+  popupItem: ItemDto | null = null;
 
   constructor(
     private http: HttpClient,
@@ -71,10 +83,7 @@ export class ItemsListComponent implements OnInit {
 
   ngOnInit() {
     this.auth.token$.subscribe(token => {
-      if (!token) {
-        this.router.navigate(['/login']);
-        return;
-      }
+      if (!token) { this.router.navigate(['/login']); return; }
       this.loadItems();
     });
   }
@@ -86,19 +95,28 @@ export class ItemsListComponent implements OnInit {
     });
   }
 
-  applyFilter(filter: ItemFilter) {
-    this.itemFilter.filterItems(filter).subscribe({
+  applyFilter(filter: Partial<ItemFilter>) {
+    this.currentFilter = { ...this.currentFilter, ...filter };
+    this.itemFilter.filterItems(this.currentFilter).subscribe({
       next: (data) => this.setItems(data),
       error: (err) => console.error('Ошибка фильтрации айтемов:', err)
     });
   }
 
+  applySort(sort: ItemFilter['sortBy']) {
+    this.currentFilter.sortBy = sort;
+    this.applyFilter(this.currentFilter);
+  }
+
+  resetFilter() {
+    this.currentFilter = { sortBy: 'date_desc' };
+    this.applyFilter(this.currentFilter);
+  }
+
   private setItems(data: ItemDto[]) {
-    this.items = data.map(i => ({
-      ...i,
-      status: (i.status ?? 'available').toLowerCase()
-    }));
+    this.items = data;
     this.totalPages = Math.ceil(this.items.length / this.itemsPerPage);
+    this.currentPage = 1;
     this.updatePage();
   }
 
@@ -108,39 +126,24 @@ export class ItemsListComponent implements OnInit {
   }
 
   nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePage();
-    }
+    if (this.currentPage < this.totalPages) { this.currentPage++; this.updatePage(); }
   }
 
   prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePage();
-    }
+    if (this.currentPage > 1) { this.currentPage--; this.updatePage(); }
   }
 
-  sellItem(item: ItemDto) {
-    const priceStr = prompt(`Введите цену продажи для "${item.title}":`, item.purchasePrice.toString());
-    if (!priceStr) return;
+  openSellPopup(item: ItemDto) { this.popupItem = item; }
 
-    const salePrice = parseFloat(priceStr);
-    if (isNaN(salePrice) || salePrice <= 0) {
-      alert('Некорректная цена');
-      return;
-    }
+  confirmSale(price: number) {
+    if (!this.popupItem) return;
 
-    const saleDto = {
-      itemId: item.id,
-      salePrice: salePrice,
-      saleDate: new Date().toISOString()
-    };
-
-    this.http.post(this.salesUrl, saleDto).subscribe({
+    const saleDto = { itemId: this.popupItem.id, salePrice: price, saleDate: new Date().toISOString() };
+    this.http.post(`${environment.apiBaseUrl}/sales`, saleDto).subscribe({
       next: () => {
-        alert('Продажа успешно зарегистрирована!');
-        item.status = 'sold';
+        this.popupItem!.status = 'sold';
+        this.popupItem = null;
+        this.router.navigate(['/sale-list']);
       },
       error: (err) => console.error('Ошибка создания продажи:', err)
     });

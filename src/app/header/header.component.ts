@@ -13,106 +13,106 @@ import { Observable } from 'rxjs';
   imports: [CommonModule, RouterModule, HeaderAuthPanelComponent, HeaderControlsComponent],
   template: `
     <header class="header">
-      <div class="logo">
-        <a routerLink="/"><img src="assets/images/Logo1.png" alt="Logo" /></a>
-      </div>
-
-      <span class="title">{{ translate.t('HEADER.TAGLINE') }}</span>
-
-      <div class="header-right">
-        <app-header-auth-panel></app-header-auth-panel>
-        <app-header-controls></app-header-controls>
+      <div class="header-left">
+        <a routerLink="/" class="logo"><img src="assets/images/Logo1.png" alt="Logo" /></a>
+        <span class="title">{{ translate.t('HEADER.TAGLINE') }}</span>
+        <div class="auth-wrapper">
+          <app-header-auth-panel></app-header-auth-panel>
+          <app-header-controls></app-header-controls>
+        </div>
       </div>
     </header>
 
     <nav class="header-nav">
-      <button routerLink="/item-create">{{ translate.t('MAIN_BOTTON_PANEL.CREATE') }}</button>
-
-      <!-- Кнопка категории видна только админам -->
-      <button *ngIf="(user$ | async)?.roles?.includes('admin')" routerLink="/category">
-        {{ translate.t('MAIN_BOTTON_PANEL.CREATE_CATEGORY') }}
-      </button>
-
-      <button routerLink="/item-list">{{ translate.t('MAIN_BOTTON_PANEL.SHOW_ITEMS') }}</button>
-      <button routerLink="/sale-list">{{ translate.t('MAIN_BOTTON_PANEL.SHOW_SALES') }}</button>
+      <div class="nav-buttons">
+        <button routerLink="/item-create">{{ translate.t('MAIN_BOTTON_PANEL.CREATE') }}</button>
+        <button *ngIf="(user$ | async)?.roles?.includes('admin')" routerLink="/category">
+          {{ translate.t('MAIN_BOTTON_PANEL.CREATE_CATEGORY') }}
+        </button>
+        <button routerLink="/item-list">{{ translate.t('MAIN_BOTTON_PANEL.SHOW_ITEMS') }}</button>
+        <button routerLink="/sale-list">{{ translate.t('MAIN_BOTTON_PANEL.SHOW_SALES') }}</button>
+      </div>
     </nav>
   `,
   styles: [`
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 60px;
-      padding: 0 20px;
-      background-color: var(--main-bg);
+      background-color: var(--header-bg);
       color: var(--main-text);
-      position: relative;
+      padding: 10px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    .logo {
-      position: absolute;
-      left: 20px;
+    .header-left {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 5px;
     }
 
     .logo img {
-      height: 40px;
+      height: 50px;
       object-fit: contain;
+      transition: filter 0.2s ease;
     }
 
-    .header-right {
-      position: absolute;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
+    .logo img:hover {
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.25));
     }
 
     .title {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 600;
-      text-align: center;
+      margin-top: 5px;
+    }
+
+    .auth-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+      flex-wrap: wrap;
     }
 
     .header-nav {
+      background: var(--header-bg);
+      border-radius: 0 0 12px 12px;
+      padding: 8px 0;
+    }
+
+    .nav-buttons {
       display: flex;
       justify-content: center;
-      align-items: center;
-      gap: 20px;
-      padding: 8px 0;
-      background-color: var(--left-panel-bg);
+      gap: 10px;
+      padding: 0 10px;
+      flex-wrap: wrap;
+      padding-bottom: 20px;
     }
 
     .header-nav button {
       background: var(--botton-bg);
       color: var(--botton-text);
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 8px 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.1s ease;
+      transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
     }
 
     .header-nav button:hover {
       background-color: var(--botton-bg-hover);
       color: var(--botton-text-hover);
-      transform: scale(1.05);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.35);
     }
   `]
 })
 export class HeaderComponent {
   user$: Observable<AppUser | null>;
-  isAdmin = false;
 
   constructor(public translate: TranslateService, public auth: AuthService) {
     this.user$ = this.auth.user$;
-    this.auth.user$.subscribe(user => {
-      this.isAdmin = user?.roles?.includes('admin') ?? false;
-    });
-
     const token = this.auth.getToken();
     if (token) {
       this.auth.getCurrentUser().subscribe({

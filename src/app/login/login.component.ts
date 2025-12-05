@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '../services/translate.service';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-login',
@@ -10,13 +13,13 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="login-container">
       <div class="login-wrapper">
-        <h3 class="fade-in">Login</h3>
+        <h3 class="fade-in">{{translate.t("LOGIN.GREETING")}}</h3>
         <input placeholder="Email" [(ngModel)]="email" class="fade-in delay-1">
         <input type="password" placeholder="Password" [(ngModel)]="password" class="fade-in delay-2">
-        <button (click)="login()" class="fade-in delay-3">Login</button>
+        <button (click)="login()" class="fade-in delay-3">{{translate.t("LOGIN.LOGIN")}}</button>
 
         <p *ngIf="isLoggedIn" class="greeting fade-in delay-4">
-          Привет, {{ email }}!
+          {{translate.t("LOGIN.LOGIN_DONE")}} {{ email }}!
         </p>
 
         <p *ngIf="!isLoggedIn && message" class="error fade-in delay-4">
@@ -111,6 +114,7 @@ import { CommonModule } from '@angular/common';
     .fade-in {
       opacity: 0;
       animation: fadeInUp 0.6s ease-out forwards;
+      text-align: center;
     }
 
     .delay-1 { animation-delay: 0.2s; }
@@ -125,7 +129,7 @@ export class LoginComponent {
   message = '';
   isLoggedIn = false;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private router: Router, public translate: TranslateService) {}
 
   login() {
     this.auth.login(this.email, this.password).subscribe({
@@ -133,9 +137,13 @@ export class LoginComponent {
         this.auth.saveToken(res.token);
         this.auth.setUser(res.user);
 
-        // Перезагрузка + редирект на главную
-        window.location.href = '/ClientKaraka/';
+        this.isLoggedIn = true;
+
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 2000);
       },
+
       error: () => {
         this.message = 'Ошибка входа';
       }

@@ -43,6 +43,8 @@ export interface ItemDto {
   `,
   styles: [`
   .item-card {
+    width: 300px;
+    height: 420px;
     background-color: var(--item-create-bg);
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -50,11 +52,9 @@ export interface ItemDto {
     color: var(--main-text);
     overflow: hidden;
     padding: 10px;
-  }
-
-  .item-card:hover {
-    background-color: var(--item-card-bg-hover);
-    box-shadow: 0 0 12px var(--item-card-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .item-image-wrapper {
@@ -63,67 +63,26 @@ export interface ItemDto {
     border-radius: 8px;
     overflow: hidden;
     background: var(--input-bg);
-    margin-bottom: 10px;
   }
 
   .item-image {
-    width: calc(100% - 20px);
-    height: 180px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    background: var(--input-bg);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin: 10px;
-    border-radius: 8px;
   }
 
   .item-content {
-    padding: 16px;
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-
-  .item-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--botton-text);
-  }
-
-  .item-description {
-    font-size: 14px;
-    color: var(--input-text);
-    line-height: 1.4;
-    height: 40px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding-top: 10px;
   }
 
   .item-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-  }
-
-  .sell-btn {
-    background-color: var(--botton-bg);
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    color: var(--botton-text);
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-  }
-
-  .sell-btn:hover {
-    background-color: var(--botton-bg-hover);
-    transform: scale(1.05);
-  }
-
-  .sold-label {
-    color: #f44336;
-    font-weight: bold;
   }
 `]
 })

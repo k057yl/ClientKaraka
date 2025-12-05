@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../services/theme.service';
 import { TranslateService } from '../services/translate.service';
-import { Lang } from '../i18n';
+import { Lang } from '../i18n/index';
 
 @Component({
   selector: 'app-header-controls',
@@ -14,12 +14,12 @@ import { Lang } from '../i18n';
         {{ currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark' }}
       </button>
 
-      <div class="lang-dropdown" (mouseleave)="isLangMenuOpen = false">
+      <div class="lang-dropdown">
         <button class="btn" (click)="toggleLangMenu()">
           🌐 {{ currentLang.toUpperCase() }}
         </button>
 
-        <div class="lang-menu" *ngIf="isLangMenuOpen">
+        <div class="lang-menu" *ngIf="isLangMenuOpen" (mouseleave)="isLangMenuOpen = false">
           <button (click)="switchLang('uk')">UA</button>
           <button (click)="switchLang('en')">EN</button>
         </div>
@@ -29,9 +29,10 @@ import { Lang } from '../i18n';
   styles: [`
     .controls {
       display: flex;
+      gap: 8px;
       align-items: center;
-      gap: 10px;
-      position: relative;
+      margin: 0;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -74,7 +75,6 @@ import { Lang } from '../i18n';
       border: none;
       text-align: left;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
     .lang-menu button:hover {
@@ -88,6 +88,8 @@ export class HeaderControlsComponent {
   isLangMenuOpen = false;
 
   constructor(private theme: ThemeService, private translate: TranslateService) {
+    this.currentLang = this.translate.getCurrentLang();
+    
     this.theme.themeChanges().subscribe(t => {
       this.currentTheme = t;
       document.body.classList.toggle('dark-theme', t === 'dark');

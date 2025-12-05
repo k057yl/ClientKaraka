@@ -1,0 +1,14 @@
+{
+  "TITLE": "Реєстрація",
+  "GREETING": "Зареєструйтеся, щоб отримати повний доступ до всіх можливостей!",
+  "EMAIL": "Введіть пошту",
+  "USERNAME": "Введіть нікнейм",
+  "PASSWORD": "Ведіть пароль",
+  "BOTTON_REGISTRATION": "Зареєструватися та отримати код",
+  "SEND_MESSAGE": "Код надіслано на ",
+  "CONFIRM": "Підтвердити",
+  "REGISTRATION_SUCCESS_CODE_SENT": "Код надіслано, перевірте пошту",
+  "ERROR_REGISTRATION_FAILED": "Помилка реєстрації",
+  "CONFIRMATION_SUCCESS": "Електронна адреса підтверджена",
+  "ERROR_CONFIRMATION_FAILED": "Невірний код"
+}

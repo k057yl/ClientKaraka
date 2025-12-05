@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService, ItemCreateDto } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
-import { Lang } from '../../i18n';
+import { Lang } from '../../i18n/index';
 import { TranslateService } from '../../services/translate.service';
 import { Subscription } from 'rxjs';
 

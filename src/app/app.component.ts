@@ -11,11 +11,9 @@ import { RouterModule } from '@angular/router';
     <div class="layout">
       <app-header></app-header>
 
-      <div class="main">
-        <section class="content" (click)="hidePanel()">
-          <router-outlet></router-outlet>
-        </section>
-      </div>
+      <main class="main" (click)="hidePanel()">
+        <router-outlet></router-outlet>
+      </main>
 
       <footer class="footer">
         <span>© 2025 Karakatsiya</span>
@@ -28,95 +26,36 @@ import { RouterModule } from '@angular/router';
     </div>
   `,
   styles: [`
-    :host { display: block; height: 100vh; overflow: hidden; }
+    :host { display: block; min-height: 100vh; }
 
-    .layout { display: flex; flex-direction: column; height: 100%; }
-    .main { position: relative; flex: 1; overflow: hidden; }
-
-    .menu-btn {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1100;
-      background: #333;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-
-    .content {
-      background: var(--bg);
-      padding: 1rem;
-      height: 100%;
-      overflow-y: auto;
-      transition: filter 0.3s ease;
-      padding-top: 80px;
-      box-sizing: border-box;
-    }
-
-    /* Скролл для Chrome, Edge, Opera */
-    .content::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .content::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .content::-webkit-scrollbar-thumb {
-      background: var(--botton-bg);
-      border-radius: 4px;
-      transition: background 0.2s ease;
-    }
-
-    /* Скролл для Firefox */
-    .content {
-      scrollbar-width: thin;
-      scrollbar-color: var(--botton-bg) rgba(255, 255, 255, 0.05);
-    }
-
-    .content::-webkit-scrollbar-thumb:hover {
-      background: var(--botton-bg-hover);
-    }
+    .layout { display: flex; flex-direction: column; min-height: 100vh; }
+    .main { flex: 1; overflow-y: auto; padding: 1rem; background: var(--main-bg); }
 
     .footer {
-      height: 60px;
-      background: var(--bg);
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0 20px;
-      font-size: 14px;
-      color: var(--input-text);
+      height: 60px;
+      background: var(--main-bg); 
       border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 14px;
     }
 
-    .footer .social {
-      display: flex;
-      gap: 12px;
-    }
+    .footer .social { display: flex; gap: 12px; }
 
-    .footer .social a {
-      color: var(--input-text);
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
+    .footer .social a { color: var(--input-text); text-decoration: none; transition: color 0.2s; }
+    .footer .social a:hover { color: var(--botton-bg); }
 
-    .footer .social a:hover {
-      color: var(--botton-bg);
+    @media(max-width: 768px) {
+      .main { padding: 0.5rem; }
+      .footer { flex-direction: column; gap: 5px; text-align: center; height: auto; padding: 10px; }
     }
   `]
 })
 export class AppComponent {
   isPanelVisible = false;
 
-  togglePanel() {
-    this.isPanelVisible = !this.isPanelVisible;
-  }
-
-  hidePanel() {
-    if (this.isPanelVisible) this.isPanelVisible = false;
-  }
+  togglePanel() { this.isPanelVisible = !this.isPanelVisible; }
+  hidePanel() { if (this.isPanelVisible) this.isPanelVisible = false; }
 }

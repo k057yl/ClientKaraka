@@ -4,119 +4,116 @@ import { Router } from '@angular/router';
 import { SaleCardComponent, SaleDto } from '../sale/sale.card.component';
 import { AuthService } from '../services/auth.service';
 import { SaleFilterService, SaleFilter } from '../services/sale.filter.service';
+import { SaleFilterPanelComponent } from './sale-filter-panel.component';
+import { FormsModule } from '@angular/forms';
+import { TranslateService } from '../services/translate.service';
 
 @Component({
   selector: 'app-sales-list',
   standalone: true,
-  imports: [CommonModule, SaleCardComponent],
+  imports: [CommonModule, FormsModule, SaleCardComponent, SaleFilterPanelComponent],
   template: `
-    <div class="filters">
-      <button (click)="applyFilter({ sortBy: 'profit_asc' })">Прибыль ▲</button>
-      <button (click)="applyFilter({ sortBy: 'profit_desc' })">Прибыль ▼</button>
-      <button (click)="applyFilter({ sortBy: 'date_desc' })">Новые</button>
-      <button (click)="resetFilter()">Сбросить</button>
-    </div>
+    <app-sale-filter-panel
+      (apply)="applyCurrentFilter($event)"
+      (sortBy)="currentSortBy = $event"
+      (reset)="resetFilter()"
+    ></app-sale-filter-panel>
+
+    <p class="total-profit" *ngIf="totalProfit !== null">
+      {{translate.t("SHARED.TOTAL_PROFIT")}} {{ totalProfit | number:'1.2-2' }}
+    </p>
 
     <div class="pagination-container">
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&lt;</button>
-      <span>Страница {{currentPage}} / {{totalPages}}</span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&gt;</button>
+      <button (click)="prevPage()" [disabled]="currentPage===1"><</button>
+      <span>{{translate.t('PAGINATION.PAGE')}} {{currentPage}} / {{totalPages}}</span>
+      <button (click)="nextPage()" [disabled]="currentPage===totalPages">></button>
     </div>
 
     <div class="sales-container">
       <app-sale-card *ngFor="let sale of pagedSales" [sale]="sale"></app-sale-card>
-      <p *ngIf="!pagedSales.length" class="no-sales">Продаж пока нет.</p>
+      <p *ngIf="!pagedSales.length" class="no-sales">{{translate.t("SHARED.NO_SALES")}}</p>
     </div>
 
     <div class="pagination-container bottom">
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&lt;</button>
-      <span>Страница {{currentPage}} / {{totalPages}}</span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&gt;</button>
+      <button (click)="prevPage()" [disabled]="currentPage===1"><</button>
+      <span>{{translate.t('PAGINATION.PAGE')}} {{currentPage}} / {{totalPages}}</span>
+      <button (click)="nextPage()" [disabled]="currentPage===totalPages">></button>
     </div>
   `,
   styles: [`
-    .filters {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .sales-container {
-      display: grid;
-      grid-template-columns: repeat(2, 300px);
-      justify-content: center;
-      gap: 20px 200px;
-      margin: 20px 0;
-    }
-
-    .pagination-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin: 10px 0;
-    }
-
-    .pagination-container.bottom { margin-bottom: 30px; }
-
-    button {
-      background: #333;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    button:hover { background: #555; }
-    button:disabled { opacity: 0.4; cursor: default; }
+    .sales-container { display:grid; grid-template-columns:1fr; justify-items:center; gap:20px; margin:20px 0; padding-bottom:10px; }
+    @media(min-width:768px){ .sales-container { grid-template-columns:repeat(2,300px); justify-content:center; gap:40px 40px; } }
+    .pagination-container{ display:flex; justify-content:center; align-items:center; gap:12px; margin:10px 0; }
+    .pagination-container.bottom{ margin-bottom:30px; }
+    button{ background:#333; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; }
+    button:disabled{ opacity:.4; cursor:default; }
+    .total-profit{ font-size:20px; color:#28a745; font-weight:bold; margin-top:10px; text-align:center; }
   `]
 })
 export class SalesListComponent implements OnInit {
   sales: SaleDto[] = [];
   pagedSales: SaleDto[] = [];
-  itemsPerPage = 10;
+  totalProfit: number = 0;
+
+  startDate?: string;
+  endDate?: string;
+  minProfit?: number;
+  maxProfit?: number;
+  currentSortBy: SaleFilter['sortBy'] = 'date_desc';
+
+  itemsPerPage = 6;
   currentPage = 1;
   totalPages = 1;
 
   constructor(
     private auth: AuthService,
     private router: Router,
-    private filterService: SaleFilterService
+    private filterService: SaleFilterService,
+    public translate: TranslateService
   ) {}
 
   ngOnInit() {
     this.auth.token$.subscribe(token => {
-      if (!token) {
-        this.router.navigate(['/login']);
-        return;
-      }
-      this.loadSales();
+      if (!token) this.router.navigate(['/login']);
+      else this.applyCurrentFilter();
     });
   }
 
-  private loadSales() {
-    this.filterService.filterSales({}).subscribe({
-      next: data => this.setSales(data),
-      error: err => console.error('Ошибка загрузки продаж:', err)
-    });
-  }
+  applyCurrentFilter(filter?: Partial<SaleFilter>) {
+    if (filter) {
+      this.startDate = filter.startDate;
+      this.endDate = filter.endDate;
+      this.minProfit = filter.minProfit;
+      this.maxProfit = filter.maxProfit;
+      if (filter.sortBy) this.currentSortBy = filter.sortBy;
+    }
 
-  applyFilter(filter: SaleFilter) {
-    this.filterService.filterSales(filter).subscribe({
-      next: data => this.setSales(data),
-      error: err => console.error('Ошибка фильтрации продаж:', err)
+    const f: SaleFilter = {
+      startDate: this.startDate,
+      endDate: this.endDate,
+      minProfit: this.minProfit,
+      maxProfit: this.maxProfit,
+      sortBy: this.currentSortBy
+    };
+
+    this.filterService.filterSales(f).subscribe({
+      next: data => this.setSales(data.sales, data.totalProfit),
+      error: err => console.error(err)
     });
   }
 
   resetFilter() {
-    this.loadSales();
+    this.startDate = undefined;
+    this.endDate = undefined;
+    this.minProfit = undefined;
+    this.maxProfit = undefined;
+    this.currentSortBy = 'date_desc';
+    this.applyCurrentFilter();
   }
 
-  private setSales(data: SaleDto[]) {
-    this.sales = data;
+  private setSales(sales: SaleDto[], profit: number) {
+    this.sales = sales;
+    this.totalProfit = profit;
     this.totalPages = Math.ceil(this.sales.length / this.itemsPerPage);
     this.currentPage = 1;
     this.updatePage();
@@ -127,17 +124,6 @@ export class SalesListComponent implements OnInit {
     this.pagedSales = this.sales.slice(start, start + this.itemsPerPage);
   }
 
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePage();
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePage();
-    }
-  }
+  nextPage() { if(this.currentPage<this.totalPages){ this.currentPage++; this.updatePage(); } }
+  prevPage() { if(this.currentPage>1){ this.currentPage--; this.updatePage(); } }
 }

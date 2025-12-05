@@ -1,0 +1,14 @@
+{
+  "TITLE": "Registration",
+  "GREETING": "Register to get full access to all features!",
+  "EMAIL": "Enter email",
+  "USERNAME": "Enter username",
+  "PASSWORD": "Enter password",
+  "BOTTON_REGISTRATION": "Register and get a code",
+  "SEND_MESSAGE": "Code sent to ",
+  "CONFIRM": "Confirm",
+  "REGISTRATION_SUCCESS_CODE_SENT": "Code sent, check your email",
+  "ERROR_REGISTRATION_FAILED": "Registration error",
+  "CONFIRMATION_SUCCESS": "Email address confirmed",
+  "ERROR_CONFIRMATION_FAILED": "Invalid code"
+}

@@ -1,16 +1,27 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { translations, Lang } from '../i18n';
+import { translations, Lang } from '../i18n/index';
 
 @Injectable({ providedIn: 'root' })
 export class TranslateService {
-  private langSubject = new BehaviorSubject<Lang>('uk');
-  lang$ = this.langSubject.asObservable();
+  private readonly STORAGE_KEY = 'app_lang';
 
-  private currentLang: Lang = 'uk';
+  private currentLang: Lang;
+  private langSubject: BehaviorSubject<Lang>;
+  lang$;
+
+  constructor() {
+    const saved = localStorage.getItem(this.STORAGE_KEY) as Lang;
+
+    this.currentLang = saved || 'en';
+
+    this.langSubject = new BehaviorSubject<Lang>(this.currentLang);
+    this.lang$ = this.langSubject.asObservable();
+  }
 
   switchLang(lang: Lang) {
     this.currentLang = lang;
+    localStorage.setItem(this.STORAGE_KEY, lang);
     this.langSubject.next(lang);
   }
 

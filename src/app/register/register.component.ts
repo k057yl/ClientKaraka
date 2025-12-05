@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '../services/translate.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -10,37 +12,32 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="login-container">
       <div class="login-wrapper">
-
-        <h3>Register</h3>
+        <p>{{translate.t('REGISTRATION.GREETING')}}</p>
+        <h3>{{translate.t('REGISTRATION.TITLE')}}</h3>
 
         <ng-container *ngIf="!codeSent">
-          <input placeholder="Email"
+          <input placeholder="{{translate.t('REGISTRATION.EMAIL')}}"
                 [(ngModel)]="email"
                 autocomplete="off">
-
-          <input placeholder="Username"
+          <input placeholder="{{translate.t('REGISTRATION.USERNAME')}}"
                 [(ngModel)]="username"
                 autocomplete="off">
-
           <input type="password"
-                placeholder="Password"
+                placeholder="{{translate.t('REGISTRATION.PASSWORD')}}"
                 [(ngModel)]="password"
                 autocomplete="new-password">
-          <button (click)="register()">Send code</button>
+          <button (click)="register()">{{translate.t('REGISTRATION.BOTTON_REGISTRATION')}}</button>
         </ng-container>
 
         <ng-container *ngIf="codeSent">
-          <p>Code sent to {{ email }}</p>
+          <p>{{translate.t('REGISTRATION.SEND_MESSAGE')}} {{ email }}</p>
           <input placeholder="Code"
             [(ngModel)]="code"
             autocomplete="one-time-code">
-          <button (click)="confirmEmail()">Confirm</button>
+          <button (click)="confirmEmail()">{{translate.t('REGISTRATION.CONFIRM')}}</button>
         </ng-container>
 
-        <p *ngIf="message" class="reply">
-          {{ message }}
-        </p>
-
+        <p *ngIf="message" class="reply">{{ message }}</p>
       </div>
     </div>
   `,
@@ -131,22 +128,25 @@ export class RegisterComponent {
   message = '';
   codeSent = false;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, public translate: TranslateService, private router: Router) {}
 
   register() {
     this.auth.register(this.email, this.username, this.password).subscribe({
       next: () => {
-        this.message = 'Code sent';
+        this.message = this.translate.t('REGISTRATION.REGISTRATION_SUCCESS_CODE_SENT');
         this.codeSent = true;
       },
-      error: () => this.message = 'Registration failed'
+      error: () => this.message = this.translate.t('REGISTRATION.ERROR_REGISTRATION_FAILED')
     });
   }
 
   confirmEmail() {
     this.auth.confirmEmail(this.code).subscribe({
-      next: () => this.message = 'Email confirmed',
-      error: () => this.message = 'Confirmation failed'
+      next: () => {
+        this.message = this.translate.t('REGISTRATION.CONFIRMATION_SUCCESS');
+        setTimeout(() => this.router.navigate(['/login']), 2000);
+      },
+      error: () => this.message = this.translate.t('REGISTRATION.ERROR_CONFIRMATION_FAILED')
     });
   }
 }

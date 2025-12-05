@@ -6,33 +6,57 @@ import { SaleDto } from '../sale/sale.card.component';
 import { AuthService } from './auth.service';
 
 export interface SaleFilter {
-  minProfit?: number;
-  maxProfit?: number;
-  startDate?: string;
-  endDate?: string;
-  sortBy?: 'profit_asc' | 'profit_desc' | 'date_asc' | 'date_desc';
+ minProfit?: number;
+ maxProfit?: number;
+ startDate?: string;
+ endDate?: string;
+ sortBy?: 'profit_asc' | 'profit_desc' | 'date_asc' | 'date_desc';
+}
+
+export interface SaleFilterResult {
+  sales: SaleDto[];
+  totalProfit: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class SaleFilterService {
-  private apiUrl = `${environment.apiBaseUrl}/salefilter`;
+    private apiUrl = `${environment.apiBaseUrl}/salefilter`;
 
-  constructor(private http: HttpClient, private auth: AuthService) {}
+    constructor(private http: HttpClient, private auth: AuthService) {}
 
-  filterSales(filter: SaleFilter = {}): Observable<SaleDto[]> {
-    let params = new HttpParams();
-    Object.entries(filter).forEach(([key, value]) => {
-      if (value != null && value !== '') {
-        params = params.set(key, value.toString());
-      }
-    });
+    filterSales(filter: SaleFilter = {}): Observable<SaleFilterResult> {
+        let params = new HttpParams();
 
-    return this.auth.token$.pipe(
-      switchMap(token => {
-        if (!token) return of([]); // если нет токена, возвращаем пустой массив
-        const headers = { Authorization: `Bearer ${token}` };
-        return this.http.get<SaleDto[]>(this.apiUrl, { params, headers });
-      })
-    );
-  }
+        for (const key in filter) {
+            const value = filter[key as keyof SaleFilter]; 
+
+            if (value !== undefined && value !== null && value !== '') {
+                let stringValue = value.toString();
+
+                if ((key === 'endDate' || key === 'startDate') && typeof value === 'string' && value.length === 10) {
+                    
+                    if (key === 'endDate') {
+                        stringValue = `${value}T23:59:59Z`; 
+                    } else {
+                        stringValue = `${value}T00:00:00Z`;
+                    }
+                }
+                
+                params = params.set(key, stringValue);
+            }
+        }
+
+        return this.auth.token$.pipe(
+            switchMap(token => {
+                if (!token) return of({ sales: [], totalProfit: 0 });
+
+                const headers = { Authorization: `Bearer ${token}` };
+
+                return this.http.get<SaleFilterResult>(this.apiUrl, {
+                    params,
+                    headers
+                });
+            })
+        );
+    }
 }

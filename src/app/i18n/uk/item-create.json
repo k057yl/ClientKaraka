@@ -1,0 +1,16 @@
+{
+  "TITLE": "Створити предмет",
+  "PLACEHOLDER_TITLE": "Назва",
+  "PLACEHOLDER_DESC": "Опис",
+  "PLACEHOLDER_PRICE": "Ціна купівлі",
+  "CHOOSE_CATEGORY": "Оберіть категорію",
+  "CHOOSE_FILE": "Оберіть файл",
+  "PHOTO_UPLOADED": "Фото завантажено",
+  "BUTTON_CREATE": "Створити",
+  "ERROR_TITLE": "Введіть назву!",
+  "ERROR_CATEGORY": "Оберіть категорію!",
+  "ERROR_PRICE": "Введіть корректную ціну!",
+  "ERROR_PHOTO": "Спочатку завантажте фото!",
+  "ERROR_CREATE": "Помилка створення!",
+  "SUCCESS": "Товар успішно додано!"
+}
