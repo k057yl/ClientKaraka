@@ -10,11 +10,15 @@ import { TranslateService } from '../services/translate.service';
   template: `
     <div class="filters-wrapper">
       <div class="top-row">
+
         <!-- Filter Panel -->
         <div class="filter-panel">
           <button (click)="filterOpen = !filterOpen">
-            {{ translate.t('FILTER_ITEM.FILTERS') }} {{ filterOpen ? '▲' : '▼' }}
+            {{ translate.t('FILTER_ITEM.FILTERS') }}: 
+            {{ getStatusLabel() }}
+            {{ filterOpen ? '▲' : '▼' }}
           </button>
+
           <div class="panel" *ngIf="filterOpen">
             <button (click)="setFilter('')">{{ translate.t('FILTER_ITEM.STAT_ALL') }}</button>
             <button (click)="setFilter('available')">{{ translate.t('FILTER_ITEM.STAT_AVAILABLE') }}</button>
@@ -25,14 +29,18 @@ import { TranslateService } from '../services/translate.service';
         <!-- Sort Panel -->
         <div class="sort-panel">
           <button (click)="sortOpen = !sortOpen">
-            {{ translate.t('FILTER_ITEM.SORT') }} {{ sortOpen ? '▲' : '▼' }}
+            {{ translate.t('FILTER_ITEM.SORT') }}:
+            {{ getSortLabel() }}
+            {{ sortOpen ? '▲' : '▼' }}
           </button>
+
           <div class="panel" *ngIf="sortOpen">
             <button (click)="setSort('price_asc')">{{ translate.t('FILTER_ITEM.PRICE_CHEAPER') }}</button>
             <button (click)="setSort('price_desc')">{{ translate.t('FILTER_ITEM.PRICE_EXPENSIVE') }}</button>
             <button (click)="setSort('date_desc')">{{ translate.t('FILTER_ITEM.NEW') }}</button>
           </div>
         </div>
+
       </div>
     </div>
   `,
@@ -50,7 +58,7 @@ import { TranslateService } from '../services/translate.service';
     .panel {
       position: absolute; top:100%; left:0; display:flex; flex-direction:column; gap:4px;
       background: var(--item-create-bg); border:1px solid var(--item-card-border); border-radius:4px;
-      padding:5px; z-index:100; min-width:140px;
+      padding:5px; z-index:100; min-width:160px;
     }
 
     .panel button {
@@ -65,6 +73,7 @@ export class ItemFilterPanelComponent {
 
   filterOpen = false;
   sortOpen = false;
+
   currentStatus: string = '';
   currentSortBy: ItemFilter['sortBy'] = 'date_desc';
 
@@ -81,6 +90,18 @@ export class ItemFilterPanelComponent {
     this.sortBy.emit(sort);
     this.emitChange();
     this.sortOpen = false;
+  }
+
+  getStatusLabel() {
+    if (this.currentStatus === 'available') return this.translate.t('FILTER_ITEM.STAT_AVAILABLE');
+    if (this.currentStatus === 'sold') return this.translate.t('FILTER_ITEM.STAT_SOLD');
+    return this.translate.t('FILTER_ITEM.STAT_ALL');
+  }
+
+  getSortLabel() {
+    if (this.currentSortBy === 'price_asc') return this.translate.t('FILTER_ITEM.PRICE_CHEAPER');
+    if (this.currentSortBy === 'price_desc') return this.translate.t('FILTER_ITEM.PRICE_EXPENSIVE');
+    return this.translate.t('FILTER_ITEM.NEW');
   }
 
   private emitChange() {

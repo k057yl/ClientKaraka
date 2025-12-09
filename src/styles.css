@@ -1,6 +1,5 @@
 :root {
-  /*--main-bg: #475d86;*/
-  --main-bg: url('/assets/images/bg_sale_light.png');
+  --main-bg: url('assets/images/bg_sale_light.png');
   --header-bg: #475d86d5;
   --main-text: #ffffff;
   --botton-bg: #5f7ab1;
@@ -15,12 +14,10 @@
   --input-text: #e0e0e0;
   --item-card-border: rgba(255, 255, 255, 0.2);
   --item-card-bg-hover: rgba(255, 255, 255, 0.05);
-  /*--item-page-bg: url('/assets/images/bg_sale_light.png');*/ 
 }
 
 body.dark-theme {
-  /*--main-bg: #0E1A2B;*/
-  --main-bg: url('/assets/images/bg_sale_dark.png');
+  --main-bg: url('assets/images/bg_sale_dark.png');
   --header-bg: #0e1a2bd0;
   --main-text: #b6e3c1;
   --botton-bg: #2f577a;
@@ -35,7 +32,6 @@ body.dark-theme {
   --input-text: #adadad;
   --item-card-border: rgba(158, 158, 158, 0.2);
   --item-card-bg-hover: rgba(0, 32, 80, 0.363);
-  /*--item-page-bg: url('/assets/images/bg_sale_dark.png');*/
 }
 
 :root, .dark-theme {

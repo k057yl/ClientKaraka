@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SaleFilter } from '../services/sale.filter.service';
@@ -9,152 +9,243 @@ import { TranslateService } from '../services/translate.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="filters-wrapper">
-      <button class="filter-toggle" (click)="filtersOpen = !filtersOpen">
-        {{ translate.t('FILTER_SALE.FILTERS') }} {{ filtersOpen ? '▲' : '▼' }}
-      </button>
+    <div class="filter-wrapper">
 
-      <div class="filters" *ngIf="filtersOpen">
-        <div class="sort-block">
-          <button (click)="setSort('profit_asc')">{{ translate.t('FILTER_SALE.PROFIT_MIN') }}</button>
-          <button (click)="setSort('profit_desc')">{{ translate.t('FILTER_SALE.PROFIT_MAX') }}</button>
-          <button (click)="setSort('date_desc')">{{ translate.t('FILTER_SALE.NEW') }}</button>
-        </div>
-        <div class="filter-row">
-          <label>{{ translate.t('FILTER_SALE.FROM_DATE') }}</label>
-          <input type="date" [(ngModel)]="startDate" />
-          <label>{{ translate.t('FILTER_SALE.TO_DATE') }}</label>
-          <input type="date" [(ngModel)]="endDate" />
-        </div>
+      <div class="top-row">
 
-        <div class="filter-row">
-          <label>{{ translate.t('FILTER_SALE.PROFIT_FROM') }}</label>
-          <input type="number" [(ngModel)]="minProfit" />
-          <label>{{ translate.t('FILTER_SALE.PROFIT_TO') }}</label>
-          <input type="number" [(ngModel)]="maxProfit" />
+        <!-- Sort Panel -->
+        <div class="sort-panel">
+          <button (click)="sortOpen = !sortOpen">
+            {{ translate.t('FILTER_SALE.SORT') }}:
+            {{ getSortLabel() }}
+            {{ sortOpen ? '▲' : '▼' }}
+          </button>
+
+          <div class="panel sort-body" *ngIf="sortOpen">
+            <button (click)="setSort('profit_asc')">{{ translate.t('FILTER_SALE.PROFIT_MIN') }}</button>
+            <button (click)="setSort('profit_desc')">{{ translate.t('FILTER_SALE.PROFIT_MAX') }}</button>
+            <button (click)="setSort('date_desc')">{{ translate.t('FILTER_SALE.NEW') }}</button>
+          </div>
         </div>
 
-        <div class="buttons-row">
-          <button class="apply-btn" (click)="applyFilter()">{{ translate.t('FILTER_SALE.APPLY') }}</button>
-          <button class="reset-btn" (click)="resetFilter()">{{ translate.t('FILTER_SALE.RESET') }}</button>
+        <!-- Filter Panel -->
+        <div class="filter-panel">
+          <button (click)="filtersOpen = !filtersOpen">
+            {{ translate.t('FILTER_SALE.FILTERS') }}
+            {{ filtersOpen ? '▲' : '▼' }}
+          </button>
+
+          <div class="panel filter-body" *ngIf="filtersOpen">
+
+            <!-- DATES -->
+            <div class="block date-block">
+              <label>{{ translate.t('FILTER_SALE.FROM_DATE') }}</label>
+              <input type="date" [(ngModel)]="startDate" />
+
+              <label>{{ translate.t('FILTER_SALE.TO_DATE') }}</label>
+              <input type="date" [(ngModel)]="endDate" />
+            </div>
+
+            <!-- PROFIT RANGE SLIDER -->
+            <div class="block slider-block">
+              <label>{{ translate.t('FILTER_SALE.PROFIT_RANGE') }}</label>
+
+              <div class="range-container">
+
+                <input type="range"
+                       min="0"
+                       [max]="maxLimit"
+                       [(ngModel)]="minProfit"
+                       (input)="onSliderChange()"/>
+
+                <input type="range"
+                       min="0"
+                       [max]="maxLimit"
+                       [(ngModel)]="maxProfit"
+                       (input)="onSliderChange()"/>
+
+                <div class="slider-values">
+                  <span>{{ minProfit }}</span>
+                  <span>{{ maxProfit }}</span>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="buttons-row">
+              <button class="reset-btn" (click)="resetFilter()">{{ translate.t('FILTER_SALE.RESET') }}</button>
+            </div>
+
+          </div>
         </div>
+
       </div>
+
     </div>
   `,
   styles: [`
-    .filters-wrapper {
-      text-align: center;
-      margin-bottom: 15px;
+    .filter-wrapper { text-align:center; margin-bottom:15px; }
+
+    .top-row {
+      display:flex;
+      justify-content:center;
+      gap:15px;
+      flex-wrap:wrap;
     }
 
-    .filter-toggle {
+    /* INDIVIDUAL PANELS */
+    .sort-panel { position:relative; width:180px; }
+    .filter-panel { position:relative; width:320px; max-width:90vw; }
+
+    .sort-panel > button,
+    .filter-panel > button {
       background: var(--botton-bg);
       color: var(--botton-text);
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-bottom: 8px;
+      padding:6px 12px;
+      border:none;
+      border-radius:4px;
+      cursor:pointer;
+      font-weight:bold;
       transition: background 0.2s;
+      width:100%;
     }
 
-    .filter-toggle:hover {
+    .sort-panel > button:hover,
+    .filter-panel > button:hover {
       background: var(--botton-bg-hover);
       color: var(--botton-text-hover);
     }
 
-    .filters {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
+    /* POPUP PANELS */
+    .panel {
+      position:absolute;
+      top:100%;
+      left:0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
       background: var(--item-create-bg);
-      border-radius: 8px;
-      border: 1px solid var(--item-card-border);
-      max-width: 700px;
-      margin: 0 auto 15px;
+      border:1px solid var(--item-card-border);
+      border-radius:4px;
+      padding:10px;
+      z-index:100;
+      box-sizing:border-box;
     }
 
-    .filter-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
+    .sort-body { min-width:180px; }
+    .filter-body { width:100%; }
+
+    /* DATE GRID */
+    .block.date-block {
+      width:100%;
+      display:grid;
+      grid-template-columns:90px minmax(0,1fr);
+      align-items:center;
+      gap:8px;
     }
 
-    .filter-row label {
-      font-weight: bold;
+    .block.date-block label { justify-self:end; }
+    .block.date-block input { width:160px; }
+
+    .panel button {
+      background: var(--botton-bg);
+      color: var(--botton-text);
+      border:none;
+      padding:6px 10px;
+      border-radius:4px;
+      cursor:pointer;
+      text-align:left;
+      transition: background 0.2s;
     }
 
-    .filters input {
-      padding: 5px 8px;
-      border: 1px solid var(--item-card-border);
-      border-radius: 4px;
+    .panel button:hover {
+      background: var(--botton-bg-hover);
+      color: var(--botton-text-hover);
+    }
+
+    .block {
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+    }
+
+    label { font-weight:bold; }
+
+    input {
+      padding:5px 8px;
+      border:1px solid var(--item-card-border);
+      border-radius:4px;
       background: var(--input-bg);
       color: var(--input-text);
-      width: 120px;
+      width:120px;
     }
 
-    .sort-block {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 5px;
-      flex-wrap: wrap;
+    /* SLIDER */
+    .slider-block {
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
     }
 
-    .sort-block button {
+    .range-container {
+      width: 100%;
+      max-width: 260px;
+      position: relative;
+      margin: 10px;
+      height: 8px;
+    }
+
+    .range-container input[type=range] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      pointer-events: none;
+      background: none;
+      -webkit-appearance: none;
+    }
+
+    .range-container input[type=range]:first-child { z-index:2; }
+    .range-container input[type=range]:last-child { z-index:3; }
+
+    .range-container input[type=range]::-webkit-slider-thumb {
+      pointer-events:auto;
+      width:16px;
+      height:16px;
+      border-radius:50%;
       background: var(--botton-bg);
-      color: var(--botton-text);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s;
+      cursor:pointer;
+      -webkit-appearance:none;
     }
 
-    .sort-block button:hover {
-      background: var(--botton-bg-hover);
-      color: var(--botton-text-hover);
+    .slider-values {
+      display:flex;
+      justify-content:space-between;
+      margin-top:35px;
+      font-weight:bold;
+      color: var(--input-text);
     }
 
     .buttons-row {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-
-    .apply-btn {
-      background: var(--botton-important-bg);
-      color: var(--botton-text);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .apply-btn:hover {
-      background: var(--botton-important-bg-hover);
+      margin-top:8px;
+      display:flex;
+      justify-content:center;
     }
 
     .reset-btn {
-      background: #b33333;
-      color: var(--botton-text);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s;
+      background:#b33333;
+      color:#fff;
+      border:none;
+      padding:6px 12px;
+      border-radius:4px;
+      cursor:pointer;
     }
 
-    .reset-btn:hover {
-      background: #c44444;
-    }
+    .reset-btn:hover { background:#c44444; }
   `]
 })
 export class SaleFilterPanelComponent {
@@ -162,14 +253,41 @@ export class SaleFilterPanelComponent {
   @Output() sortBy = new EventEmitter<SaleFilter['sortBy']>();
   @Output() reset = new EventEmitter<void>();
 
-  constructor(public translate: TranslateService) {}
+  constructor(private el: ElementRef, public translate: TranslateService) {}
 
+  sortOpen = false;
   filtersOpen = false;
+
   startDate?: string;
   endDate?: string;
-  minProfit?: number;
-  maxProfit?: number;
+
+  minProfit = 0;
+  maxProfit = 5000;
+  maxLimit = 20000;
+
   currentSortBy: SaleFilter['sortBy'] = 'date_desc';
+
+  getSortLabel() {
+    if (this.currentSortBy === 'profit_asc') return this.translate.t('FILTER_SALE.PROFIT_MIN');
+    if (this.currentSortBy === 'profit_desc') return this.translate.t('FILTER_SALE.PROFIT_MAX');
+    return this.translate.t('FILTER_SALE.NEW');
+  }
+
+  setSort(order: SaleFilter['sortBy']) {
+    this.currentSortBy = order;
+    this.sortBy.emit(order);
+    this.applyFilter();
+    this.sortOpen = false;
+  }
+
+  onSliderChange() {
+    if (this.minProfit > this.maxProfit) {
+      const t = this.minProfit;
+      this.minProfit = this.maxProfit;
+      this.maxProfit = t;
+    }
+    this.applyFilter();
+  }
 
   applyFilter() {
     this.apply.emit({
@@ -181,18 +299,24 @@ export class SaleFilterPanelComponent {
     });
   }
 
-  setSort(order: SaleFilter['sortBy']) {
-    this.currentSortBy = order;
-    this.sortBy.emit(order);
-    this.applyFilter();
-  }
-
   resetFilter() {
     this.startDate = undefined;
     this.endDate = undefined;
-    this.minProfit = undefined;
-    this.maxProfit = undefined;
+    this.minProfit = 0;
+    this.maxProfit = 5000;
     this.currentSortBy = 'date_desc';
+
     this.reset.emit();
+    this.applyFilter();
+
+    this.filtersOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    if (!this.el.nativeElement.contains(event.target as Node)) {
+      this.sortOpen = false;
+      this.filtersOpen = false;
+    }
   }
 }
